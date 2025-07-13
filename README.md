@@ -47,19 +47,23 @@ pip install -r requirements.txt
 
 ### 4. After setup, run the command-line interface:
 ```bash
-python cli.py data/example.wav data/example.TextGrid --tier "UIT001 - words" --lambda_ 0.5 --beta_ 0.5
+python cli.py --data_dir data/ --tier "UIT001 - words" --lambda_ 0.5 --beta_ 0.5
 ```
+-- This will automatically process all .wav and .TextGrid file pairs in the data/ directory that share the same base filename (e.g., example.wav and example.TextGrid).
+
 # Arguments:
 
-- wav: Path to the input audio .wav file
-
-- tg: Path to the aligned .TextGrid file
+- data_dir: Path to the folder containing .wav and .TextGrid files
 
 - tier: Name of the tier to extract prominence from (e.g., "word", "phones")
 
-- lambda: Weight for mid-band energy (default = 0.5)
+- utt_threshold:    Minimum silence duration (in seconds) to split utterances (default: 0.3)
 
-- beta: Weight for dynamic prosody (pitch-energy interaction) (default = 0.5)
+- lambda_:  Weight for mid-band energy (default = 0.5)
+
+- beta_:    Weight for dynamic prosody (pitch-energy interaction) (default = 0.5)
+
+- output_dir:   Path to save output .txt files (default: output/)
 
 # Example Output
 ```bash
