@@ -51,30 +51,31 @@ python cli.py --wav data/example.wav --tg data/example.TextGrid --tier "words" -
 ```
 # Arguments:
 
---wav: Path to the input audio .wav file
+- wav: Path to the input audio .wav file
 
---tg: Path to the aligned .TextGrid file
+- tg: Path to the aligned .TextGrid file
 
---tier: Name of the tier to extract prominence from (e.g., "word", "phones")
+- tier: Name of the tier to extract prominence from (e.g., "word", "phones")
 
---lambda: Weight for mid-band energy (default = 0.5)
+- lambda: Weight for mid-band energy (default = 0.5)
 
---beta: Weight for dynamic prosody (pitch-energy interaction) (default = 0.5)
+- beta: Weight for dynamic prosody (pitch-energy interaction) (default = 0.5)
 
 # Example Output
+```bash
 word	start_time	end_time	raw_prominence	norm_prominence
 hello	0.51	       0.72	        2.439	        0.873
-
+```
 # To run a quick demo with default paths, use:
 ```bash
 python examples/demo_extract.py
 ```
 # Your TextGrid tier should contain labeled intervals for words or phones like this:
-
+```bash
 IntervalTier "words" ...
 "hello" 0.50–0.72
 "how"  0.74–1.02
-
+```
 # License
 This project is licensed under the MIT License. See the LICENSE file for more information.
 
@@ -82,6 +83,7 @@ This project is licensed under the MIT License. See the LICENSE file for more in
 Feel free to open issues or submit pull requests to improve this tool. Feature suggestions, bug reports, and enhancements are welcome.
 
 # Repository Structure
+```bash
 ProsodicProminenceExtractor/
 ├── prominence/
 │   ├── extract.py         # Core extraction logic
@@ -94,3 +96,4 @@ ProsodicProminenceExtractor/
 ├── requirements.txt       # Python dependencies
 ├── README.md              # Documentation
 ├── .gitignore             # Ignored files
+```
