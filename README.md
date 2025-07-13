@@ -47,7 +47,7 @@ pip install -r requirements.txt
 
 ### 4. After setup, run the command-line interface:
 ```bash
-python cli.py --wav data/example.wav --tg data/example.TextGrid --tier "words" --lambda 0.5 --beta 0.5
+python cli.py data/example.wav data/example.TextGrid --tier "UIT001 - words" --lambda_ 0.5 --beta_ 0.5
 ```
 # Arguments:
 
