@@ -47,7 +47,7 @@ pip install -r requirements.txt
 
 ### 4. After setup, run the command-line interface:
 ```bash
-python cli.py --data_dir data/ --tier "UIT001 - words" --lambda_ 0.5 --beta_ 0.5
+python cli.py --data_dir data/ --tier "your_tier_name" --lambda_ 0.5 --beta_ 0.5
 ```
 -- This will automatically process all .wav and .TextGrid file pairs in the data/ directory that share the same base filename (e.g., example.wav and example.TextGrid).
 
