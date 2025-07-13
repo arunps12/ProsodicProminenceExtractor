@@ -1,0 +1,4 @@
+data/*.wav
+data/*.TextGrid
+data/example.wav
+data/example.TextGrid
