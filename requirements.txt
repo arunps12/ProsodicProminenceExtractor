@@ -1,0 +1,6 @@
+torch
+torchaudio
+parselmouth
+textgrid
+numpy
+scipy
