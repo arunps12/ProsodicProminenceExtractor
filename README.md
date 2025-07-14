@@ -1,6 +1,6 @@
 # ProsodicProminenceExtractor
 
-**ProsodicProminenceExtractor** is an open-source Python tool that extracts **word-level or phone-level prosodic prominence** from speech recordings using `.wav` audio and aligned `.TextGrid` annotations. It calculates prominence using pitch, energy, and event dynamics, with support for utterance-level normalization.
+**ProsodicProminenceExtractor** is an open-source Python tool that extracts **word-level, syllable-level or phone-level prosodic prominence** from speech recordings using `.wav` audio and aligned `.TextGrid` annotations. It calculates prominence using pitch, energy, and event dynamics, with support for utterance-level normalization.
 
 ---
 
@@ -11,7 +11,7 @@
   - RMS energy
   - Mid-band energy (300–2200 Hz)
   - Pitch-based rise/fall dynamics (event-based)
-- Supports **custom tier selection** from TextGrid (e.g., `"words"`, `"phones"`).
+- Supports **custom tier selection** from TextGrid (e.g., `"words"`, `"syllables"`,  `"phones"`).
 - Allows **custom weighting** of acoustic and dynamic features via `lambda` and `beta`.
 - Supports **utterance-based normalization**.
 - Works via **CLI**, **demo script**, or as an importable Python module.
@@ -47,13 +47,29 @@ pip install -r requirements.txt
 
 ### 4. After setup, run the command-line interface:
 ```bash
-python prom.py --data_dir data/ --tier "your_tier_name" --lambda_ 0.5 --beta_ 0.5
+python prom.py --data_dir /path/to/your/data --tier "your_tier_name" --lambda_ 0.5 --beta_ 0.5 --output_dir /path/to/your/output
 ```
--- This will automatically process all .wav and .TextGrid file pairs in the data/ directory that share the same base filename (e.g., example.wav and example.TextGrid).
+- data_dir should be the main folder where your audio (.wav) and TextGrid (.TextGrid) files are stored.
+
+- You can paste multiple .wav and .TextGrid files directly into this folder if they all use the same tier name (e.g., "word"). In this case, just provide that tier name once using --tier.
+
+- If your files have different tier names, you should create subfolders, where each folder contains files with the same tier name. The script will go through each subfolder and apply the tier name you provide.
+
+- .wav and .TextGrid files share the same base filename (e.g., example.wav and example.TextGrid)
+
+- The script will automatically:
+-  Go through the base folder and all its subfolders.
+-  Match each .wav file with a .TextGrid file that has the same filename.
+-  Extract prominence using the tier you specify with --tier.
+
+- The script saves results automatically in the --output_dir folder.
+-  Output filenames are based on the input file and tier name (e.g., S105_word.csv).
+
+- You can also place your .wav and .TextGrid files or folders directly inside the default project data/ folder and pass that as --data_dir.
 
 # Arguments:
 
-- data_dir: Path to the folder containing .wav and .TextGrid files
+- data_dir: Path to the folder containing .wav and .TextGrid files 
 
 - tier: Name of the tier to extract prominence from (e.g., "word", "phones")
 
@@ -96,7 +112,7 @@ ProsodicProminenceExtractor/
 ├── examples/
 │   └── demo_extract.py    # Simple demo script
 │
-├── cli.py                 # Command-line interface
+├── prom.py                 # Command-line interface
 ├── requirements.txt       # Python dependencies
 ├── README.md              # Documentation
 ├── .gitignore             # Ignored files
