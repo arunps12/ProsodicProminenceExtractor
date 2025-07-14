@@ -14,7 +14,7 @@ def main():
     parser = argparse.ArgumentParser(description="Batch extract prosodic prominence from audio/TextGrid files.")
     parser.add_argument("--data_dir", type=str, required=True, help="Directory containing .wav and .TextGrid files")
     parser.add_argument("--tier", type=str, default="word", help="Tier name to extract from")
-    parser.add_argument("--utt_threshold", type=float, default=0.2, help="Silence threshold for utterance split")
+    parser.add_argument("--utt_threshold", type=float, default=0.3, help="Silence threshold for utterance split")
     parser.add_argument("--lambda_", type=float, default=0.5, help="Weight for mid-band energy")
     parser.add_argument("--beta_", type=float, default=0.5, help="Weight for prosodic dynamics")
 
