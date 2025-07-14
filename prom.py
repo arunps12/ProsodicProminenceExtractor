@@ -2,8 +2,10 @@ import argparse
 import os
 import sys
 
-# Add project root to path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+# Ensure project root is consistent (folder where this script lives)
+script_dir = os.path.dirname(os.path.realpath(__file__))
+project_root = os.path.abspath(os.path.join(script_dir))
+sys.path.append(project_root)
 
 from prominence.extract import extract_word_prominence_from_prosody
 from prominence.io import save_prominence_to_text
@@ -16,31 +18,38 @@ def main():
     parser.add_argument("--lambda_", type=float, default=0.5, help="Weight for mid-band energy")
     parser.add_argument("--beta_", type=float, default=0.5, help="Weight for prosodic dynamics")
 
-    # Always save in output folder inside project root
-    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    # Save to 'output' folder inside ProsodicProminenceExtractor project
     default_output = os.path.join(project_root, "output")
     parser.add_argument("--output_dir", type=str, default=default_output, help="Directory to save output .txt files")
 
     args = parser.parse_args()
-
     os.makedirs(args.output_dir, exist_ok=True)
 
-    # Recursively find .wav files and corresponding TextGrids
-    for root, _, files in os.walk(args.data_dir):
-        for file in files:
-            if file.endswith(".wav"):
-                base = os.path.splitext(file)[0]
-                wav_path = os.path.join(root, file)
-                tg_path = os.path.join(root, base + ".TextGrid")
+    file_pairs_found = 0
 
-                if not os.path.exists(tg_path):
-                    print(f" Skipping {base} — TextGrid not found")
+    for root, _, files in os.walk(args.data_dir):
+        print(f"Searching in: {root}")
+        for file in files:
+            if file.endswith(".TextGrid"):
+                base = os.path.splitext(file)[0]
+                tg_path = os.path.join(root, file)
+
+                wav_path = os.path.join(root, base + ".wav")
+                raw_path = os.path.join(root, base)
+
+                # Check for either .wav or extensionless file
+                if os.path.exists(wav_path):
+                    audio_path = wav_path
+                elif os.path.exists(raw_path):
+                    audio_path = raw_path
+                else:
+                    print(f" Skipping {base}: No matching audio file found (.wav or extensionless).")
                     continue
 
-                print(f" Processing: {base}")
+                print(f"Found pair: {audio_path} + {tg_path}")
                 try:
                     results = extract_word_prominence_from_prosody(
-                        wav_path, tg_path,
+                        audio_path, tg_path,
                         tier_name=args.tier,
                         utt_threshold=args.utt_threshold,
                         lambda_=args.lambda_,
@@ -50,14 +59,21 @@ def main():
                     save_prominence_to_text(
                         results,
                         textgrid_path=tg_path,
-                        wav_path=wav_path,
+                        wav_path=audio_path,
                         output_dir=args.output_dir,
                         tier_name=args.tier
                     )
+
+                    file_pairs_found += 1
                 except Exception as e:
                     print(f"Error processing {base}: {e}")
 
-    print(f"\n Batch processing complete. Results saved to: {args.output_dir}")
+    print("\n===================================")
+    if file_pairs_found > 0:
+        print(f"Processed {file_pairs_found} file(s). Results saved to:\n   {args.output_dir}")
+    else:
+        print("No valid .wav + .TextGrid pairs found or No valid tier named found. Nothing was processed.")
+    print("===================================\n")
 
 if __name__ == "__main__":
     main()
