@@ -121,7 +121,7 @@ def extract_word_prominence_from_prosody(wav_path, textgrid_path, tier_name="wor
     if current_start is not None and last_word_end is not None:
         utterances.append((current_start, last_word_end))
 
-    #print(f"\n✅ Extracted {len(utterances)} utterances from {os.path.basename(textgrid_path)}", flush=True)
+    #print(f"\nExtracted {len(utterances)} utterances from {os.path.basename(textgrid_path)}", flush=True)
     #for i, (start, end) in enumerate(utterances):
         #print(f"  • Utterance {i+1}: {start:.5f} → {end:.5f} (duration: {end - start:.3f} s)", flush=True)
 
