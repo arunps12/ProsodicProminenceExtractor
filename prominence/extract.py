@@ -31,7 +31,16 @@ def extract_prosodic_features(samples, sr, lambda_=0.5, beta_=0.5):
     sound = parselmouth.Sound(samples, sampling_frequency=sr)
     duration = sound.duration
 
-    pitch = sound.to_pitch(time_step=0.01, pitch_floor=75, pitch_ceiling=500).selected_array['frequency']
+    # Adjust pitch_floor based on utterance duration
+    pitch_floor = max(75, 1.0 / duration)  # Avoid too low pitch_floor for short segments
+    pitch_ceiling = 500
+
+    try:
+        pitch = sound.to_pitch(time_step=0.01, pitch_floor=pitch_floor, pitch_ceiling=pitch_ceiling).selected_array['frequency']
+    except Exception as e:
+        print(f"Skipping utterance: {e}")
+        return np.array([]), 0, duration
+
     frame_len = int(0.02 * sr)
     hop_len = frame_len
     frames = np.lib.stride_tricks.sliding_window_view(samples, window_shape=frame_len)[::hop_len]
@@ -62,18 +71,21 @@ def extract_prosodic_features(samples, sr, lambda_=0.5, beta_=0.5):
     A_pitch = A_pitch[:min_len]
     D_pitch = D_pitch[:min_len]
 
+    if min_len == 0:
+        return np.array([]), 0, duration
+
     prominence = lambda_ * mid_energy + beta_ * (rms_energy * A_pitch * D_pitch)
     prominence = (prominence - np.min(prominence)) / (np.max(prominence) - np.min(prominence) + 1e-8)
 
     return prominence, min_len, duration
 
 
+
 def extract_word_prominence_from_prosody(wav_path, textgrid_path, tier_name="word", utt_threshold=0.3, lambda_=0.5, beta_=0.5):
     waveform, sr = torchaudio.load(wav_path)
     samples = waveform[0].numpy()
     tg = textgrid.TextGrid.fromFile(textgrid_path)
-    
-    # Collect utterances by merging short gaps between intervals
+
     tier = next((t for t in tg.tiers if t.name.lower() == tier_name.lower()), None)
     if tier is None:
         raise ValueError(f"No tier named '{tier_name}' found in {textgrid_path}")
@@ -88,7 +100,6 @@ def extract_word_prominence_from_prosody(wav_path, textgrid_path, tier_name="wor
                 current_start = interval.minTime
             current_end = interval.maxTime
         elif current_end is not None:
-            # If next word appears after long silence
             next_start = interval.maxTime
             if next_start - current_end > utt_threshold:
                 utterances.append((current_start, current_end))
@@ -98,13 +109,22 @@ def extract_word_prominence_from_prosody(wav_path, textgrid_path, tier_name="wor
     if current_start is not None:
         utterances.append((current_start, current_end))
 
-    # Compute prominence per word, normalized by utterance
     results = {}
     for u_start, u_end in utterances:
         start_sample = int(sr * u_start)
         end_sample = int(sr * u_end)
         utter_samples = samples[start_sample:end_sample]
-        prominence, num_frames, duration = extract_prosodic_features(utter_samples, sr, lambda_, beta_)
+
+        try:
+            prominence, num_frames, duration = extract_prosodic_features(utter_samples, sr, lambda_, beta_)
+        except Exception as e:
+            print(f"Skipping utterance from {u_start:.2f}s to {u_end:.2f}s due to error: {e}")
+            continue
+
+        if len(prominence) == 0 or num_frames == 0:
+            print(f" Feature extraction failed for audio segment {u_start:.2f}s–{u_end:.2f}s (may be due to silence or short duration). Skipping segment.")
+            continue
+
         frame_times = np.linspace(u_start, u_end, num_frames, endpoint=False)
         frame_duration = (u_end - u_start) / num_frames
         frame_starts = frame_times
@@ -117,18 +137,25 @@ def extract_word_prominence_from_prosody(wav_path, textgrid_path, tier_name="wor
                 continue
             if not (u_start <= interval.minTime < u_end):
                 continue
+
             frame_indices = np.where((frame_starts < interval.maxTime) & (frame_ends > interval.minTime))[0]
-            score = float(np.sum(prominence[frame_indices])) if len(frame_indices) > 0 else 0.0
-            raw_scores[(interval.minTime, word)] = score
+            if len(frame_indices) == 0:
+                print(f"Skipping word '{word}' (no overlapping frames).")
+                continue
 
-        # Normalize within utterance
-        values = list(raw_scores.values())
-        min_val, max_val = np.min(values), np.max(values)
-        norm_scores = {
-            k: (v - min_val) / (max_val - min_val + 1e-8) for k, v in raw_scores.items()
-        }
+            try:
+                score = float(np.sum(prominence[frame_indices]))
+                raw_scores[(interval.minTime, word)] = score
+            except Exception as e:
+                print(f"Skipping word '{word}' due to scoring error: {e}")
+                continue
 
-        for k in raw_scores:
-            results[k] = {"raw": raw_scores[k], "norm": norm_scores[k]}
+        if len(raw_scores) == 0:
+            continue  # skip normalization if no valid scores
+
+        min_val, max_val = np.min(list(raw_scores.values())), np.max(list(raw_scores.values()))
+        for k, v in raw_scores.items():
+            norm = (v - min_val) / (max_val - min_val + 1e-8)
+            results[k] = {"raw": v, "norm": norm}
 
     return results
