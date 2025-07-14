@@ -1,7 +1,5 @@
 # ProsodicProminenceExtractor
 
-## ProsodicProminenceExtractor
-
 **ProsodicProminenceExtractor** is an open-source Python tool that extracts **word-level, syllable-level, or phone-level prosodic prominence** from speech recordings using `.wav` audio and aligned `.TextGrid` annotations. It calculates prominence using pitch, energy, and event-based dynamics, with support for utterance-level normalization.
 
 You can control the prominence calculation by adjusting two key parameters:
@@ -20,7 +18,7 @@ These values can be customized depending on your dataset and analysis goals. For
   ```
 - Emphasize pitch dynamics:
  ```bash
---lambda_ 0.3 --beta_ 0.7
+--lambda_ 0.2 --beta_ 0.7
   ```
 - Balanced influence:
  ```bash
