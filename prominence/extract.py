@@ -31,8 +31,7 @@ def extract_prosodic_features(samples, sr, lambda_=0.5, beta_=0.5):
     sound = parselmouth.Sound(samples, sampling_frequency=sr)
     duration = sound.duration
 
-    # Adjust pitch_floor based on utterance duration
-    pitch_floor = max(75, 1.0 / duration)  # Avoid too low pitch_floor for short segments
+    pitch_floor = max(75, 1.0 / duration)
     pitch_ceiling = 500
 
     try:
@@ -66,13 +65,13 @@ def extract_prosodic_features(samples, sr, lambda_=0.5, beta_=0.5):
     A_mid, D_mid = compute_event_params(mid_energy)
 
     min_len = min(len(mid_energy), len(rms_energy), len(A_pitch), len(D_pitch))
+    if min_len == 0:
+        return np.array([]), 0, duration
+
     mid_energy = mid_energy[:min_len]
     rms_energy = rms_energy[:min_len]
     A_pitch = A_pitch[:min_len]
     D_pitch = D_pitch[:min_len]
-
-    if min_len == 0:
-        return np.array([]), 0, duration
 
     prominence = lambda_ * mid_energy + beta_ * (rms_energy * A_pitch * D_pitch)
     prominence = (prominence - np.min(prominence)) / (np.max(prominence) - np.min(prominence) + 1e-8)
@@ -80,43 +79,61 @@ def extract_prosodic_features(samples, sr, lambda_=0.5, beta_=0.5):
     return prominence, min_len, duration
 
 
+_original_addInterval = textgrid.IntervalTier.addInterval
+def patched_addInterval(self, interval):
+    if interval.maxTime > self.maxTime:
+        print(f"[WARNING] Clipping interval maxTime {interval.maxTime} to tier maxTime {self.maxTime}")
+        interval.maxTime = self.maxTime
+    _original_addInterval(self, interval)
+
+textgrid.IntervalTier.addInterval = patched_addInterval
 
 def extract_word_prominence_from_prosody(wav_path, textgrid_path, tier_name="word", utt_threshold=0.3, lambda_=0.5, beta_=0.5):
     waveform, sr = torchaudio.load(wav_path)
-    # Convert to mono by averaging channels if stereo
     if waveform.shape[0] > 1:
         waveform = waveform.mean(dim=0, keepdim=True)
     samples = waveform[0].numpy()
-    tg = textgrid.TextGrid.fromFile(textgrid_path)
 
+    tg = textgrid.TextGrid.fromFile(textgrid_path)
     tier = next((t for t in tg.tiers if t.name.lower() == tier_name.lower()), None)
+
     if tier is None:
         raise ValueError(f"No tier named '{tier_name}' found in {textgrid_path}")
 
+    # Build utterances from word segments only
     utterances = []
     current_start = None
-    current_end = None
+    last_word_end = None
 
     for interval in tier.intervals:
-        if interval.mark.strip():
+        word = interval.mark.strip()
+        if word:
             if current_start is None:
                 current_start = interval.minTime
-            current_end = interval.maxTime
-        elif current_end is not None:
+            last_word_end = interval.maxTime
+        elif last_word_end is not None:
             next_start = interval.maxTime
-            if next_start - current_end > utt_threshold:
-                utterances.append((current_start, current_end))
+            if next_start - last_word_end > utt_threshold:
+                utterances.append((current_start, last_word_end))
                 current_start = None
-                current_end = None
+                last_word_end = None
 
-    if current_start is not None:
-        utterances.append((current_start, current_end))
+    if current_start is not None and last_word_end is not None:
+        utterances.append((current_start, last_word_end))
+
+    #print(f"\n✅ Extracted {len(utterances)} utterances from {os.path.basename(textgrid_path)}", flush=True)
+    #for i, (start, end) in enumerate(utterances):
+        #print(f"  • Utterance {i+1}: {start:.5f} → {end:.5f} (duration: {end - start:.3f} s)", flush=True)
 
     results = {}
     for u_start, u_end in utterances:
         start_sample = int(sr * u_start)
         end_sample = int(sr * u_end)
         utter_samples = samples[start_sample:end_sample]
+
+        #if len(utter_samples) < int(0.02 * sr):
+            #print(f"Skipping short utterance from {u_start:.2f}s to {u_end:.2f}s (< 20ms)")
+            #continue
 
         try:
             prominence, num_frames, duration = extract_prosodic_features(utter_samples, sr, lambda_, beta_)
@@ -125,7 +142,7 @@ def extract_word_prominence_from_prosody(wav_path, textgrid_path, tier_name="wor
             continue
 
         if len(prominence) == 0 or num_frames == 0:
-            print(f" Feature extraction failed for audio segment {u_start:.2f}s–{u_end:.2f}s (may be due to silence or short duration). Skipping segment.")
+            print(f"Feature extraction failed for segment {u_start:.2f}s–{u_end:.2f}s. Skipping.")
             continue
 
         frame_times = np.linspace(u_start, u_end, num_frames, endpoint=False)
@@ -154,7 +171,7 @@ def extract_word_prominence_from_prosody(wav_path, textgrid_path, tier_name="wor
                 continue
 
         if len(raw_scores) == 0:
-            continue  # skip normalization if no valid scores
+            continue
 
         min_val, max_val = np.min(list(raw_scores.values())), np.max(list(raw_scores.values()))
         for k, v in raw_scores.items():
