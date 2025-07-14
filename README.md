@@ -1,6 +1,31 @@
 # ProsodicProminenceExtractor
 
-**ProsodicProminenceExtractor** is an open-source Python tool that extracts **word-level, syllable-level or phone-level prosodic prominence** from speech recordings using `.wav` audio and aligned `.TextGrid` annotations. It calculates prominence using pitch, energy, and event dynamics, with support for utterance-level normalization.
+## ProsodicProminenceExtractor
+
+**ProsodicProminenceExtractor** is an open-source Python tool that extracts **word-level, syllable-level, or phone-level prosodic prominence** from speech recordings using `.wav` audio and aligned `.TextGrid` annotations. It calculates prominence using pitch, energy, and event-based dynamics, with support for utterance-level normalization.
+
+You can control the prominence calculation by adjusting two key parameters:
+
+- **`lambda_`**: Weight for mid-band energy (default = `0.5`)  
+  Controls the importance of amplitude-based cues from the mid-frequency band (300–2200 Hz). Increase this to emphasize energy-related prominence.
+
+- **`beta_`**: Weight for dynamic prosody (pitch-energy interaction) (default = `0.5`)  
+  Emphasizes event-based changes in pitch and energy. Increase this to focus more on pitch movement or expressive intonation.
+
+These values can be customized depending on your dataset and analysis goals. For example:
+
+- Emphasize energy-based prominence:
+  ```bash
+  --lambda_ 0.7 --beta_ 0.3¨
+  ```
+- Emphasize pitch dynamics:
+ ```bash
+--lambda_ 0.3 --beta_ 0.7
+  ```
+- Balanced influence:
+ ```bash
+--lambda_ 0.5 --beta_ 0.5
+  ```
 
 ---
 
@@ -58,12 +83,12 @@ python prom.py --data_dir /path/to/your/data --tier "your_tier_name" --lambda_ 0
 - .wav and .TextGrid files share the same base filename (e.g., example.wav and example.TextGrid)
 
 - The script will automatically:
--  Go through the base folder and all its subfolders.
--  Match each .wav file with a .TextGrid file that has the same filename.
--  Extract prominence using the tier you specify with --tier.
+  -  Go through the base folder and all its subfolders.
+  -  Match each .wav file with a .TextGrid file that has the same filename.
+  -  Extract prominence using the tier you specify with --tier.
 
 - The script saves results automatically in the --output_dir folder.
--  Output filenames are based on the input file and tier name (e.g., S105_word.csv).
+  -  Output filenames are based on the input file and tier name (e.g., S105_word.csv).
 
 - You can also place your .wav and .TextGrid files or folders directly inside the default project data/ folder and pass that as --data_dir.
 
