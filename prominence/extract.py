@@ -83,6 +83,9 @@ def extract_prosodic_features(samples, sr, lambda_=0.5, beta_=0.5):
 
 def extract_word_prominence_from_prosody(wav_path, textgrid_path, tier_name="word", utt_threshold=0.3, lambda_=0.5, beta_=0.5):
     waveform, sr = torchaudio.load(wav_path)
+    # Convert to mono by averaging channels if stereo
+    if waveform.shape[0] > 1:
+        waveform = waveform.mean(dim=0, keepdim=True)
     samples = waveform[0].numpy()
     tg = textgrid.TextGrid.fromFile(textgrid_path)
 
