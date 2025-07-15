@@ -113,6 +113,17 @@ hello	0.51	       0.72	        2.439	        0.873
 ```bash
 python examples/demo_extract.py
 ```
+This script uses:
+
+- A sample audio file: `data/example.wav`  
+- A corresponding annotation file: `data/example.TextGrid`
+
+ **Make sure both files** (`example.wav` and `example.TextGrid`) are placed in the `data/` directory of the project.
+
+**Note**: The TextGrid file should include a word tier named exactly **`words`**, as this is the default tier name used in the demo script.
+
+You can run this from your terminal inside the project directory. The script will compute word-level prominence based on default parameters and print the results.
+
 # Your TextGrid tier should contain labeled intervals for words like this:
 ```bash
 IntervalTier "words" ...
