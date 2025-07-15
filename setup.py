@@ -11,7 +11,7 @@ setup(
     install_requires=[
         "torch",
         "torchaudio",
-        "parselmouth",
+        "praat-parselmouth",
         "textgrid",
         "numpy",
         "scipy"
