@@ -29,7 +29,7 @@ These values can be customized depending on your dataset and analysis goals. For
 
 ## What the Tool Does
 
-- Computes **prosodic prominence scores** for each annotated word or phone interval.
+- Computes **prosodic prominence scores** for each annotated word interval.
 - Uses a combination of:
   - RMS energy
   - Mid-band energy (300–2200 Hz)
