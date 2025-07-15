@@ -1,6 +1,6 @@
 torch
 torchaudio
-parselmouth
+praat-parselmouth
 textgrid
 numpy
 scipy
