@@ -18,7 +18,7 @@ These values can be customized depending on your dataset and analysis goals. For
   ```
 - Emphasize pitch dynamics:
  ```bash
---lambda_ 0.2 --beta_ 0.7
+--lambda_ 0.2 --beta_ 0.8
   ```
 - Balanced influence:
  ```bash
