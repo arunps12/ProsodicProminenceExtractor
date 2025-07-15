@@ -16,5 +16,5 @@ tg_path = os.path.join(project_root, "data", "example.TextGrid")
 output_dir = os.path.join(project_root, "output")
 
 # extraction and save results
-results = extract_word_prominence_from_prosody(wav_path, tg_path, tier_name="UIT001 - words", lambda_=0.5, beta_=0.5)
+results = extract_word_prominence_from_prosody(wav_path, tg_path, tier_name="words", lambda_=0.5, beta_=0.5)
 save_prominence_to_text(results, tg_path, wav_path, output_dir=output_dir, tier_name="UIT001 - words")
