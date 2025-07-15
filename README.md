@@ -1,6 +1,6 @@
 # ProsodicProminenceExtractor
 
-**ProsodicProminenceExtractor** is an open-source Python tool that extracts **word-level, syllable-level, or phone-level prosodic prominence** from speech recordings using `.wav` audio and aligned `.TextGrid` annotations. It calculates prominence using pitch, energy, and event-based dynamics, with support for utterance-level normalization.
+**ProsodicProminenceExtractor** is an open-source Python tool that extracts **word-level prosodic prominence** from speech recordings using `.wav` audio and aligned `.TextGrid` annotations. It calculates prominence using pitch, energy, and event-based dynamics, with support for utterance-level normalization.
 
 You can control the prominence calculation by adjusting two key parameters:
 
@@ -34,7 +34,7 @@ These values can be customized depending on your dataset and analysis goals. For
   - RMS energy
   - Mid-band energy (300–2200 Hz)
   - Pitch-based rise/fall dynamics (event-based)
-- Supports **custom tier selection** from TextGrid (e.g., `"words"`, `"syllables"`,  `"phones"`).
+- Supports **custom tier selection** from TextGrid (e.g., `"words"`).
 - Allows **custom weighting** of acoustic and dynamic features via `lambda` and `beta`.
 - Supports **utterance-based normalization**.
 - Works via **CLI**, **demo script**, or as an importable Python module.
@@ -94,7 +94,7 @@ python prom.py --data_dir /path/to/your/data --tier "your_tier_name" --lambda_ 0
 
 - data_dir: Path to the folder containing .wav and .TextGrid files 
 
-- tier: Name of the tier to extract prominence from (e.g., "word", "phones")
+- tier: Name of the tier to extract prominence from (e.g., "words")
 
 - utt_threshold:    Minimum silence duration (in seconds) to split utterances (default: 0.3)
 
@@ -113,7 +113,7 @@ hello	0.51	       0.72	        2.439	        0.873
 ```bash
 python examples/demo_extract.py
 ```
-# Your TextGrid tier should contain labeled intervals for words or phones like this:
+# Your TextGrid tier should contain labeled intervals for words like this:
 ```bash
 IntervalTier "words" ...
 "hello" 0.50–0.72
