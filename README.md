@@ -151,3 +151,9 @@ ProsodicProminenceExtractor/
 ├── README.md              # Documentation
 ├── .gitignore             # Ignored files
 ```
+---
+## 🌟 About Me
+
+Hi there! I'm **Arun Prakash Singh**, a **Marie Curie Research Fellow at the University of Oslo (UiO)**.  
+My research focuses on **speech technology, data engineering, and machine learning**, with an emphasis on building intelligent, data-driven systems that model human communication and learning.  
+I am passionate about integrating **AI, analytics, and large-scale data pipelines** to advance our understanding of how humans process and acquire language.
