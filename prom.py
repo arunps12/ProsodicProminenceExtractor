@@ -2,7 +2,7 @@ import argparse
 import os
 import sys
 
-# Ensure project root is consistent (folder where this script lives)
+# project root 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 project_root = os.path.abspath(os.path.join(script_dir))
 sys.path.append(project_root)
